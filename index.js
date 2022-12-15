@@ -15,7 +15,6 @@ const COMPANY_NAME = 'company_name';
 const TABLET_NAME = 'tablet_name';
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
-const YOUR_APPS_CLIENT_ID = '959287164059-d0112j3jp11o4h0pb9ur22d6r4icack0.apps.googleusercontent.com';
 const app = dialogflow({
   clientId: YOUR_APPS_CLIENT_ID
 });
