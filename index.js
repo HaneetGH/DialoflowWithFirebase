@@ -15,6 +15,7 @@ const COMPANY_NAME = 'company_name';
 const TABLET_NAME = 'tablet_name';
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
+const YOUR_APPS_CLIENT_ID = '959287164059-d0112j3jp11o4h0pb9ur22d6r4icack0.apps.googleusercontent.com';
 const app = dialogflow({
   clientId: YOUR_APPS_CLIENT_ID
 });
@@ -46,19 +47,32 @@ const app = dialogflow({
 app.intent('login_user', (agent) => {
  let email = agent.parameters.email;
   agent.add(email);
-    return sendEmail(agent,email);
+    return sendVerificationEmail(agent,email);
    
   });
 
+  app.intent('vpn_issue', (agent) => {
+    if(!agent.user.storage.session || agent.user.storage.email==""){
+      agent.add(`Please Login Yourself first`);
+      agent.add(`Enter Your email`);
+     return;
+   }
+
+    return sendEmail(agent,agent.user.storage.email, "These are sample Text to reconnect with vpn");
+     
+     });
+
   app.intent('user_otp', (agent) => {
     let otp = agent.parameters.otp;
-  
+    
     //agent.add(`What Happen to you `+tablet_name+" "+agent.user.storage.someProperty +" " );
    if(otp==agent.user.storage.otp){
+     agent.user.storage.email = agent.user.storage.email;
     agent.add(`Verified User `);
     agent.user.storage.session = true;
    }
    else {
+    agent.user.storage.email = ``;
     agent.user.storage.session = false;
     agent.add(`Verified Fail `+otp+`--`+agent.user.storage.otp);
    }
@@ -83,14 +97,15 @@ app.intent('Get Signin', (conv, params, signin) => {
 
 
 const BASEURL = 'https://us-central1-healthscore-4fcdf.cloudfunctions.net/api/v1/';
-function sendEmail(agent,email) {
+function sendVerificationEmail(agent,email) {
 
   
- return axios.get((BASEURL + "sendEmail?email="+email+"&code=12345"))
+ return axios.get((BASEURL + "sendVerificationEmail?email="+email+"&code=12345"))
   .then(function (response) {
     // handle success
     console.log(response);
     agent.user.storage.otp = '12345';
+   agent.user.storage.email = email;
    agent.add("Verification email send");
   })
   .catch(function (error) {
@@ -101,4 +116,22 @@ function sendEmail(agent,email) {
     agent.add("Please check your email");
   });
 }
+
+function sendEmail(agent,email,msg) {
+
+  
+  return axios.get((BASEURL + "sendVerificationEmail?email="+email+"&msg="+msg))
+   .then(function (response) {
+     // handle success
+  
+    agent.add("Information share on your email");
+   })
+   .catch(function (error) {
+     // handle error
+      agent.add("email send  Fail");
+   })
+   .finally(function () {
+     agent.add("Please check your email");
+   });
+ }
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
