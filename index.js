@@ -20,10 +20,9 @@ const app = dialogflow({
   clientId: YOUR_APPS_CLIENT_ID
 });
  app.intent(WELCOME_INTENT, (agent) => {
-    agent.add(`Welcome to my agent!`);
+    agent.add(`Welcome to TechnoRap Support`);
    agent.user.storage.session = false;
-   agent.add(`Please Login Your self first`);
-   agent.add(`Enter Your email`);
+   agent.add(`Enter Your email for OTP verification`);
    
   });
  
@@ -34,8 +33,7 @@ const app = dialogflow({
 
   app.intent('tablet_related_issue', (agent) => {
     if(!agent.user.storage.session){
-       agent.add(`Please Login Yourself first`);
-       agent.add(`Enter Your email`);
+       agent.add(`Enter Your email for OTP verification`);
       return;
     }
     let company_name = agent.parameters[COMPANY_NAME];
@@ -47,18 +45,27 @@ const app = dialogflow({
 app.intent('login_user', (agent) => {
  let email = agent.parameters.email;
   agent.add(email);
-    return sendVerificationEmail(agent,email);
+    return sendVerificationEmail(agent,email,"12345");
    
   });
 
   app.intent('vpn_issue', (agent) => {
     if(!agent.user.storage.session || agent.user.storage.email==""){
-      agent.add(`Please Login Yourself first`);
-      agent.add(`Enter Your email`);
+      agent.add(`Enter Your email for OTP verification`);
      return;
    }
 
     return sendEmail(agent,agent.user.storage.email, "These are sample Text to reconnect with vpn");
+     
+     });
+
+ app.intent('laptop_issue', (agent) => {
+    if(!agent.user.storage.session || agent.user.storage.email==""){
+      agent.add(`Enter Your email for OTP verification`);
+     return;
+   }
+agent.add(`We are creating an ticket for it, Please wait..`);
+    return sendEmail(agent,agent.user.storage.email, "Ticket with ID Sample_ticket_id has been created. IT people will connect with you in sometime");
      
      });
 
@@ -68,7 +75,8 @@ app.intent('login_user', (agent) => {
     //agent.add(`What Happen to you `+tablet_name+" "+agent.user.storage.someProperty +" " );
    if(otp==agent.user.storage.otp){
      agent.user.storage.email = agent.user.storage.email;
-    agent.add(`Verified User `);
+    agent.add(`Welcome `+agent.user.storage.email);
+     agent.add("Yes, Now Tell me, How May I help you with?");
     agent.user.storage.session = true;
    }
    else {
@@ -97,10 +105,10 @@ app.intent('Get Signin', (conv, params, signin) => {
 
 
 const BASEURL = 'https://us-central1-healthscore-4fcdf.cloudfunctions.net/api/v1/';
-function sendVerificationEmail(agent,email) {
+function sendVerificationEmail(agent,email,otp) {
 
   
- return axios.get((BASEURL + "sendVerificationEmail?email="+email+"&code=12345"))
+ return axios.get((BASEURL + "sendVerificationEmail?email="+email+"&code="+otp))
   .then(function (response) {
     // handle success
     console.log(response);
@@ -110,7 +118,7 @@ function sendVerificationEmail(agent,email) {
   })
   .catch(function (error) {
     // handle error
-     agent.add("Verification email send  Fail");
+     agent.add("Verification email send  Fail "+error);
   })
   .finally(function () {
     agent.add("Please check your email");
@@ -120,7 +128,7 @@ function sendVerificationEmail(agent,email) {
 function sendEmail(agent,email,msg) {
 
   
-  return axios.get((BASEURL + "sendVerificationEmail?email="+email+"&msg="+msg))
+  return axios.get((BASEURL + "sendEmail?email="+email+"&msg="+msg))
    .then(function (response) {
      // handle success
   
