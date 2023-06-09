@@ -13,16 +13,16 @@ const FALLBACK_INTENT = 'Default Fallback Intent';
 const TABLET_RELATED_ISSUE = "tablet_related_issue";
 const COMPANY_NAME = 'company_name';
 const TABLET_NAME = 'tablet_name';
-
+const PRODUCT_NAME = 'any';
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 const YOUR_APPS_CLIENT_ID = '959287164059-d0112j3jp11o4h0pb9ur22d6r4icack0.apps.googleusercontent.com';
 const app = dialogflow({
   clientId: YOUR_APPS_CLIENT_ID
 });
  app.intent(WELCOME_INTENT, (agent) => {
-    agent.add(`Welcome to TechnoRap Support`);
+    agent.add(`Welcome to Walmart`);
    agent.user.storage.session = false;
-   agent.add(`Enter Your email for OTP verification`);
+   agent.add(`How May I help You with?`);
    
   });
  
@@ -124,6 +124,37 @@ function sendVerificationEmail(agent,email,otp) {
     agent.add("Please check your email");
   });
 }
+
+  app.intent('tablet_related_issue', (agent) => {
+    if(!agent.user.storage.session){
+       agent.add(`Enter Your email for OTP verification`);
+      return;
+    }
+    let product_name = agent.parameters[PRODUCT_NAME];
+  
+    agent.add(`I am Looking for  `+product_name+ ` and will add in list` );
+    // agent.add(`I got your account details, ${payload.name}. What do you want to do next?${tablet_name}`);
+  });
+
+ app.intent('find_item_and_add', (agent) => {
+        
+      let product_name = agent.parameters[PRODUCT_NAME];
+
+  agent.add(`I am Looking for  `+product_name+ ` and will add in your cart`);
+
+  agent.add(`I found  `+product_name+ ` and added to your cart`);
+  
+  agent.add(`Thankyou for shopping with us`);
+     
+    });
+
+  app.intent('find_item_and_remove', (agent) => {
+        
+      let product_name = agent.parameters[PRODUCT_NAME];
+
+        agent.add(`Okay, No problem,  `+product_name+ ` has been removed` );
+   
+    });
 
 function sendEmail(agent,email,msg) {
 
